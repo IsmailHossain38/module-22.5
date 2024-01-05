@@ -208,31 +208,31 @@ class TransferMoney(LoginRequiredMixin,View):
             user_id = form.cleaned_data['user_id']
             current_user = request.user.account 
             try:
-                # if current_user.balance > amount:
-                to_user = UserBankAccount.objects.get(account_no=user_id)
-                    
-                current_user.balance -= amount
-                current_user.save()
-                    
-                to_user.balance += amount
-                to_user.save()
-                    
-                Transaction.objects.create(
-                    account = current_user,
-                    amount =amount,
-                    balance_after_transaction = current_user.balance,
-                    transaction_type = TRANSFER,
+                if current_user.balance > amount:
+                    to_user = UserBankAccount.objects.get(account_no=user_id)
                         
-                )
-                Transaction.objects.create(
-                    account = to_user,
-                    amount =amount,
-                    balance_after_transaction = to_user.balance,
-                    transaction_type = RECEIVED,
-                )
-                messages.success(request,'successfully Transfered Amount')
-                # else:
-                #     messages.error(request,'You have not enough money')
+                    current_user.balance -= amount
+                    current_user.save()
+                        
+                    to_user.balance += amount
+                    to_user.save()
+                        
+                    Transaction.objects.create(
+                        account = current_user,
+                        amount =amount,
+                        balance_after_transaction = current_user.balance,
+                        transaction_type = TRANSFER,
+                            
+                    )
+                    Transaction.objects.create(
+                        account = to_user,
+                        amount =amount,
+                        balance_after_transaction = to_user.balance,
+                        transaction_type = RECEIVED,
+                    )
+                    messages.success(request,'successfully Transfered Amount')
+                else:
+                    messages.error(request,'You have not enough money')
             except UserBankAccount.DoesNotExist:
                 messages.error(request,'Account Doesnot Exist!')
         return render(request,self.template_name,{'form':form })
